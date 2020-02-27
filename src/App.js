@@ -1,24 +1,33 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
+import * as contentful from 'contentful'
+import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
 import './App.css';
 
+const client = contentful.createClient({
+  space: process.env.REACT_APP_CONTENTFUL_SPACE, 
+  accessToken: process.env.REACT_APP_CONTENTFUL_TOKEN,
+})
+
 function App() {
+  const [entries, setEntries] = useState([])
+  useEffect(() => {
+    client.getEntries()
+    .then((response) => {
+      setEntries(response.items)
+    })
+    return
+  }, [])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      { entries.length > 0 && entries.map(entry => (
+        <div>
+          <h1>
+            {entry.fields.title}
+          </h1>
+          {documentToReactComponents(entry.fields.body)}
+        </div>
+      ))}
     </div>
   );
 }
